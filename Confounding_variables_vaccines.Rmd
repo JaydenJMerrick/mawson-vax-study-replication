@@ -1,0 +1,127 @@
+---
+title: "Confounding-Vaccine-Study"
+author: "Jayden Merrick"
+date: "2026-04-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# # # # # # # # # # # # # # # #Note of Purpose: # # # # # # # # 
+#
+#  RFK Used a study to """"""convince""""" the 
+#   The United States congress that vaccines have
+#   significant potential to cause Neurodevelopment
+#   Disorders (NDDs) in children who get the vaccine.
+#
+#  The 2015/2025 study by Anthony Mawson is widely 
+#   critiqued due to its inadequate inclusion of important 
+#   confounding variables and likely evident survey bias.
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+```{r}
+#install.packages("nhanesA")
+#library(nhanesA)
+
+install.packages("ipumsr")
+install.packages("toolero")
+
+
+# # # # # # # # # Using Toolero to create project skeleton: # # # # # # # # #
+#
+# Code is pulled from toolero guide here:
+# https://cran.rstudio.com/web/packages/toolero/vignettes/toolero-intro.html
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+#library(toolero)
+
+#init_project(path = "./..")
+
+citation("toolero")
+```
+
+# Data Gathering
+```{r}
+# nhanes removed data points regarding autism related questions- I will be pivoiting to a new dataset - JJM
+
+library(nhanesA)
+
+nhanesTables("DEMO", 2016) # Demographic data from 2017 NHANES survey.
+nhanesTables("Q", 2012)
+
+# Possible Tables:
+# HIQ - Health Insurance
+# ECQ - Childhood
+# DPQ - Depression
+# MCQ - Medical Conditions
+# HSQ - Current Health
+# CFQ - Cognitive Function
+
+# Download the demographic data
+raw_demo_data <- nhanes('DEMO_I')
+raw_immun_data <- nhanes('IMQ_I')
+raw_ndd_data <- nhanes('MCQ_J') # Dependent?
+raw_seduc_data <- nhanes('ECQ_J')
+
+raw_ndd_data # MCQ080 is ADHD, MCQ053 is Anemia (proxy-var)
+raw_immun_data 
+raw_demo_data
+raw_seduc_data
+
+nhanesTableVars('Q', 'HIQ_G') # Explains each questions code
+
+# nhanesCodebook('IMQ_J', 'IMQ011') # Aligns the meaning of each answer (1 = Yes, 2 = no, etc...)
+
+```
+
+```{r}
+library(ipumsr)
+
+# Trying to use NHIS data
+nhis_ddi <- read_ipums_ddi("../data-raw/nhis_00003.xml") 
+nhis_raw <- read_ipums_micro(nhis_ddi)
+
+# List of added Variables. Sample is from 2012-2019 (Before covid)
+# Type	Variable	Label
+# H	YEAR	Survey year
+# H	SERIAL	Sequential Serial Number, Household Record
+# H	STRATA	Stratum for variance estimation
+# H	PSU	Primary sampling unit (PSU) for variance estimation
+# H	NHISHID	NHIS Unique identifier, household
+# H	HHWEIGHT	Household weight, final annual
+# P	PERNUM	Person number within family/household (from reformatting)
+# P	NHISPID	NHIS Unique Identifier, person
+# P	HHX	Household number (from NHIS)
+# P	FMX	Family number (from NHIS)
+# P	PX	Person number of respondent (from NHIS).
+# P	PERWEIGHT	Final basic annual weight
+# P	SAMPWEIGHT	Sample Person Weight
+# P	FWEIGHT	Final annual family weight
+# P	ASTATFLG	Sample adult flag
+# P	CSTATFLG	Sample child flag
+# P	SEX	Sex
+# P	POVERTY	Ratio of family income to poverty threshold (categorical)
+# P	BWGTGRAM	Birth weight, in grams (corrected 2004-2010 values)
+# P	SAWGEN	Saw/talked to general doctor, past 12 months
+# P	VISITYRNO	Total office visits in past 12 months
+# P	HIMCAID	Has Medicaid insurance
+# P	HIMCARE	Has Medicare insurance
+# P	VACFLU12M	Had ANY flu vaccine, past 12 months
+# P	SHOTPNUNO	Number of pneumonia vaccine shots ever received
+# P	SHOTHEPBNO	Number doses hepatitis B vaccine received
+# P	SHOTHEPANO	Number doses hepatitis A vaccine received
+# P	SHOTSHNGEV	Ever had shingles vaccine
+# P	SHOTZOSTEV	Ever had Zostavax vaccine
+# P	SHOTSGRXEV	Ever had Shingrix vaccine
+# P	ADDEV	Ever told had ADHD/ADD
+# P	AUTISMEV	Ever told had autism
+# P	AUTISMNW	Currently has Autism, Asperger's disorder, pervasive development disorder, or autism spectrum disorder
+# P	HPVACHAD	Ever received HPV vaccine
+# P	CLIMPREGMO	Duration of limiting pregnancy: Months
+# P	SAWMENT	Saw/talked to mental health professional, past 12 months
+```
+
